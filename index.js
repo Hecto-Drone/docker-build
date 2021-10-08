@@ -27,9 +27,14 @@ async function buildAndPushDockerImage(imageName, dockerFile, push = true, conte
 }
 
 async function fileExists(path) {
-    const exitCode = await exec.exec(path);
+    const githubWorkspace = process.env.GITHUB_WORKSPACE;
 
-    return exitCode === 0;
+    try {
+        await fs.stat(join(githubWorkspace, path));
+        return true;
+    } catch (e) {
+        return false;
+    }
 }
 
 async function filesChanged(paths) {
@@ -67,6 +72,8 @@ async function run() {
 
     const shouldPush = mainBranches.includes(branch);
     await buildAndPushDockerImage(image, "Dockerfile", shouldPush, ".");
+
+    await cache
 
     core.endGroup("Dockerfile build");
 }
