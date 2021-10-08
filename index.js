@@ -24,7 +24,7 @@ async function getSecret(kvp) {
     }
 
     const tmpdir = join(os.tmpdir(), "docker-build");
-    await fs.mkdtemp(tmpdir);
+    await fs.mkdir(tmpdir);
 
     const secretFile = tmp.tmpNameSync({ tmpdir });
     await fs.writeFile(secretFile, value);
