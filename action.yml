@@ -4,7 +4,7 @@ inputs:
   image:
     description: 'Docker image name'
     required: true
-  built-for:
+  build-for:
     description: 'Architecture image is bulid for'
     required: false
     default: 'any'
