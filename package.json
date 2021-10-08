@@ -1,0 +1,26 @@
+{
+  "name": "docker-build",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hecto-Drone/docker-build.git"
+  },
+  "keywords": [],
+  "author": "Mathias Hansen",
+  "license": "NONE",
+  "bugs": {
+    "url": "https://github.com/Hecto-Drone/docker-build/issues"
+  },
+  "homepage": "https://github.com/Hecto-Drone/docker-build#readme",
+  "dependencies": {
+    "@actions/cache": "^1.0.7",
+    "@actions/core": "^1.6.0",
+    "@actions/exec": "^1.1.0",
+    "@actions/github": "^5.0.0",
+    "@actions/io": "^1.1.1"
+  }
+}

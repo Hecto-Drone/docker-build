@@ -1,0 +1,20 @@
+name: 'Dokcer build'
+description: 'Build and publish image to ghcr.io'
+inputs:
+  image:
+    description: 'Docker image name'
+    required: true
+  built-for:
+    description: 'Architecture image is bulid for'
+    required: false
+    default: 'any'
+  github-token:
+    description: "GitHub Token used to authenticate against a repository for Git context"
+    default: ${{ github.token }}
+    required: false
+runs:
+  using: 'node12'
+  main: 'index.js'
+    
+
+    

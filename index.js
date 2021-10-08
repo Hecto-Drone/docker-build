@@ -1,0 +1,78 @@
+const core = require("@actions/core");
+const github = require("@actions/github");
+const exec = require("@actions/exec");
+const cache = require("@actions/cache");
+const crypto = require("crypto");
+const fs = require("fs").promises;
+
+const image = core.getInput("image");
+const branch = github.context.ref.replace(/refs\/heads\//, "");
+const buildFor = core.getInput("build-for", { required: false }) || 'any';
+const githubToken = core.getInput("github-token");
+
+const mainBranches = [ "master", "development" ];
+
+async function buildAndPushDockerImage(imageName, dockerFile, push = true, context = ".") {
+    const arch = buildFor === "any" ? '' : '-' + buildFor;
+    const buildArgs = ["GIT_BRANCH=" + branch].map(a => `--build-arg ${a}`).join(" ");
+
+    const args = `buildx build --tag ${imageName}${arch}:${branch} ${push ? '--push' : ''} --secret ${githubToken} ${buildArgs} --file ${dockerFile} ${context}`
+        .split(" ").filter(a => !!a);
+    const exitCode = await exec.exec("docker", args);
+
+    if (exitCode !== 0) {
+        throw new Error("Docker build failed");
+    }
+}
+
+async function fileExists(path) {
+    const exitCode = await exec.exec(path);
+
+    return exitCode === 0;
+}
+
+async function filesChanged(paths) {
+    const hash = crypto.createHash("sha256");
+
+    for (const path of paths) {
+        hash.update(await fs.readFile(path));
+    }
+    
+    const setupFileChanged = !(await cache.restoreCache(paths, hash));
+
+    return setupFileChanged;
+}
+
+async function run() {
+    const setupFileExists = await fileExists("Dockerfile.setup");
+
+    if (setupFileExists) {
+        const setupFileChanged = await filesChanged(["Dockerfile.setup", ".github/workflows/build.yml"]);
+        
+        if (setupFileChanged) {
+            core.startGroup("Dockerfile.setup build");
+            core.info("Building setup");
+            
+            await buildAndPushDockerImage(image + "-setup", "Dockerfile.setup", true, ".");
+            
+            core.endGroup("Dockerfile.setup build");
+        } 
+    }
+
+    core.startGroup("Dockerfile build");
+
+    const shouldPush = mainBranches.includes(branch);
+    await buildAndPushDockerImage(image, "Dockerfile", shouldPush, ".");
+
+    core.endGroup("Dockerfile build");
+}
+
+try {
+    core.startGroup("Docker build");
+
+    await run();
+
+    core.endGroup("Docker build");
+} catch (e) {
+    core.setFailed(e);
+}
