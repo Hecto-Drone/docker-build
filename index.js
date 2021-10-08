@@ -23,10 +23,7 @@ async function getSecret(kvp) {
         throw new Error(`${kvp} is not a valid secret`);
     }
 
-    const tmpdir = join(os.tmpdir(), "docker-build");
-    await fs.mkdir(tmpdir);
-
-    const secretFile = tmp.tmpNameSync({ tmpdir });
+    const secretFile = tmp.tmpNameSync({ tmpdir: os.tmpdir() });
     await fs.writeFile(secretFile, value);
 
     return `id=${key},src=${secretFile}`;
