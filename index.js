@@ -67,12 +67,14 @@ async function run() {
     core.endGroup("Dockerfile build");
 }
 
-try {
-    core.startGroup("Docker build");
-
-    await run();
-
-    core.endGroup("Docker build");
-} catch (e) {
-    core.setFailed(e);
-}
+(async () => {
+    try {
+        core.startGroup("Docker build");
+        
+        await run();
+        
+        core.endGroup("Docker build");
+    } catch (e) {
+        core.setFailed(e);
+    }
+})();
