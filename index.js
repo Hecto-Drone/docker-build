@@ -5,6 +5,8 @@ const cache = require("@actions/cache");
 const crypto = require("crypto");
 const { join } = require("path");
 const fs = require("fs").promises;
+const os = require("os");
+const tmp = require("tmp");
 
 const image = core.getInput("image");
 const branch = github.context.ref.replace(/refs\/heads\//, "");
@@ -13,11 +15,28 @@ const githubToken = core.getInput("github-token");
 
 const mainBranches = [ "master", "development" ];
 
+async function getSecret(kvp) {
+    const delimiterIndex = kvp.indexOf('=');
+    const key = kvp.substring(0, delimiterIndex);
+    let value = kvp.substring(delimiterIndex + 1);
+    if (key.length == 0 || value.length == 0) {
+        throw new Error(`${kvp} is not a valid secret`);
+    }
+
+    const tmpdir = join(os.tmpdir(), "docker-build");
+    await fs.mkdtemp(tmpdir);
+
+    const secretFile = tmp.tmpNameSync({ tmpdir });
+    await fs.writeFile(secretFile, value);
+
+    return `id=${key},src=${secretFile}`;
+}
+
 async function buildAndPushDockerImage(imageName, dockerFile, push = true, context = ".") {
     const arch = buildFor === "any" ? '' : '-' + buildFor;
     const buildArgs = ["GIT_BRANCH=" + branch].map(a => `--build-arg ${a}`).join(" ");
 
-    const args = `buildx build --tag ${imageName}${arch}:${branch} ${push ? '--push' : ''} --secret ${githubToken} ${buildArgs} --file ${dockerFile} ${context}`
+    const args = `buildx build --tag ${imageName}${arch}:${branch} ${push ? '--push' : ''} --secret ${getSecret(githubToken)} ${buildArgs} --file ${dockerFile} ${context}`
         .split(" ").filter(a => !!a);
     const exitCode = await exec.exec("docker", args);
 
