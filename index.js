@@ -3,6 +3,7 @@ const github = require("@actions/github");
 const exec = require("@actions/exec");
 const cache = require("@actions/cache");
 const crypto = require("crypto");
+const { join } = require("path");
 const fs = require("fs").promises;
 
 const image = core.getInput("image");
@@ -33,6 +34,9 @@ async function fileExists(path) {
 
 async function filesChanged(paths) {
     const hash = crypto.createHash("sha256");
+    const githubWorkspace = process.env.GITHUB_WORKSPACE;
+    
+    paths = paths.map(p => join(githubWorkspace, p));
 
     for (const path of paths) {
         hash.update(await fs.readFile(path));
