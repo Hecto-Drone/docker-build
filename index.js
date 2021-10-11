@@ -62,8 +62,12 @@ async function filesChanged(paths) {
     for (const path of paths) {
         hash.update(await fs.readFile(path));
     }
+
+    const hashDigest = hash.digest("hex");
     
-    const setupFileChanged = !(await cache.restoreCache(paths, hash.digest("hex")));
+    const setupFileChanged = !(await cache.restoreCache(paths, hashDigest));
+
+    await cache.saveCache(paths, hashDigest);
 
     return setupFileChanged;
 }
