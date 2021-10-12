@@ -35,7 +35,12 @@ async function buildAndPushDockerImage(imageName, dockerFile, push = true, conte
 
     const args = `buildx build --tag ${imageName}${arch}:${branch} ${push ? '--push' : ''} --secret ${await getSecret(`GIT_AUTH_TOKEN=${githubToken}`)} ${buildArgs} --file ${dockerFile} ${context}`
         .split(" ").filter(a => !!a);
-    const exitCode = await exec.exec("docker", args);
+    const exitCode = await exec.exec("docker", args, {
+        env: {
+            GIT_BRANCH: branch,
+            BUILD_FOR: buildFor,
+        }
+    });
 
     if (exitCode !== 0) {
         throw new Error("Docker build failed");
