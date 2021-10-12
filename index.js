@@ -57,15 +57,22 @@ async function filesChanged(paths) {
     const hash = crypto.createHash("sha256");
     const githubWorkspace = process.env.GITHUB_WORKSPACE;
     
-    paths = paths.map(p => join(githubWorkspace, p));
+    paths = paths.map(p => {
+        if (p.startsWith("/")) {
+            return p;
+        } else {
+            return join(githubWorkspace, p);
+        }
+    });
 
     for (const path of paths) {
         hash.update(await fs.readFile(path));
     }
 
     const hashDigest = hash.digest("hex");
+    core.info("Dockerfile.setup hash: " + hashDigest);
     
-    const setupFileChanged = !(await cache.restoreCache(paths, hashDigest));
+    const setupFileChanged = (await cache.restoreCache(paths, hashDigest)) === undefined;
 
     await cache.saveCache(paths, hashDigest);
 
