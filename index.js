@@ -76,7 +76,11 @@ async function filesChanged(paths) {
     
     const setupFileChanged = (await cache.restoreCache(paths, hashDigest)) === undefined;
 
-    await cache.saveCache(paths, hashDigest);
+    try {
+        await cache.saveCache(paths, hashDigest);
+    } catch (e) {
+        console.error(e);
+    }
 
     return setupFileChanged;
 }
