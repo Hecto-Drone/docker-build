@@ -65,6 +65,8 @@ async function filesChanged(paths) {
         }
     });
 
+    hash.update(`${image}-${buildFor}:${branch}`);
+
     for (const path of paths) {
         hash.update(await fs.readFile(path));
     }
@@ -99,8 +101,6 @@ async function run() {
 
     const shouldPush = mainBranches.includes(branch);
     await buildAndPushDockerImage(image, "Dockerfile", shouldPush, ".");
-
-    await cache
 
     core.endGroup("Dockerfile build");
 }
