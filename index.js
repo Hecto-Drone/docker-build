@@ -31,7 +31,7 @@ async function getSecret(kvp) {
 
 async function buildAndPushDockerImage(imageName, dockerFile, push = true, context = ".") {
     const arch = buildFor === "any" ? '' : '-' + buildFor;
-    const buildArgs = ["GIT_BRANCH=" + branch].map(a => `--build-arg ${a}`).join(" ");
+    const buildArgs = ["GIT_BRANCH=" + branch, "BUILD_FOR=" + arch].map(a => `--build-arg ${a}`).join(" ");
 
     const args = `buildx build --tag ${imageName}${arch}:${branch} ${push ? '--push' : ''} --secret ${await getSecret(`GIT_AUTH_TOKEN=${githubToken}`)} ${buildArgs} --file ${dockerFile} ${context}`
         .split(" ").filter(a => !!a);
