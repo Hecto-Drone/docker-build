@@ -9,7 +9,7 @@ const os = require("os");
 const tmp = require("tmp");
 
 const image = core.getInput("image");
-const branch = github.context.ref.replace(/refs\/heads\//, "");
+const branch = (github.context.ref.match(/\/(.+?)$/) || [,'unknown'])[1];
 const buildFor = core.getInput("build-for", { required: false }) || 'any';
 const githubToken = core.getInput("github-token");
 
