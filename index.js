@@ -37,9 +37,10 @@ async function buildAndPushDockerImage(imageName, dockerFile, push = true, conte
         `--tag ${imageName}${arch}:${branch} ` +
         `${push ? '--push' : ''} ` +
         `--secret ${await getSecret(`GIT_AUTH_TOKEN=${githubToken}`)} ${buildArgs} ` +
-        `--file ${dockerFile} ${context} ` +
+        `--file ${dockerFile} ` +
         `--cache-from type=local,src=/tmp/.buildx-cache ` +
-        `--cache-to type=local,src=/tmp/.buildx-cache`
+        `--cache-to type=local,src=/tmp/.buildx-cache ` +
+        `${context} `
         .split(" ").filter(a => !!a);
     const exitCode = await exec.exec("docker", args);
 
