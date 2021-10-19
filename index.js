@@ -35,17 +35,15 @@ async function buildAndPushDockerImage(imageName, dockerFile, push = true, conte
 
     await exec.exec("docker", ["--help"]);
 
-    const args = `buildx build ` +
+    const args = (`buildx build ` +
         `--tag ${imageName}${arch}:${branch} ` +
         `${push ? '--push' : ''} ` +
         `--cache-from type=local --cache-from src=/tmp/.buildx-cache ` +
         `--cache-to type=local --cache-to src=/tmp/.buildx-cache ` +
         `--secret ${await getSecret(`GIT_AUTH_TOKEN=${githubToken}`)} ${buildArgs} ` +
         `--file ${dockerFile} ` +
-        `${context} `
-        .split(" ").filter(a => !!a);
-
-    core.info(args.join(" "));
+        `${context} `)
+            .split(" ").filter(a => !!a);
 
     const exitCode = await exec.exec("docker", args);
 
