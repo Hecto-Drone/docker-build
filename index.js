@@ -33,7 +33,7 @@ async function buildAndPushDockerImage(imageName, dockerFile, push = true, conte
     const arch = buildFor === "any" ? '' : '-' + buildFor;
     const buildArgs = ["GIT_BRANCH=" + branch, "BUILD_FOR=" + buildFor].map(a => `--build-arg ${a}`).join(" ");
 
-    await exec("docker", ["--help"]);
+    await exec.exec("docker", ["--help"]);
 
     const args = `buildx build ` +
         `--tag ${imageName}${arch}:${branch} ` +
