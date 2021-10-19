@@ -33,13 +33,13 @@ async function buildAndPushDockerImage(imageName, dockerFile, push = true, conte
     const arch = buildFor === "any" ? '' : '-' + buildFor;
     const buildArgs = ["GIT_BRANCH=" + branch, "BUILD_FOR=" + buildFor].map(a => `--build-arg ${a}`).join(" ");
 
-    await exec.exec("docker", ["--help"]);
+    await exec.exec("docker", ["buildx", "build", "--help"]);
 
     const args = (`buildx build ` +
         `--tag ${imageName}${arch}:${branch} ` +
         `${push ? '--push' : ''} ` +
-        `--cache-from type=local --cache-from src=/tmp/.buildx-cache ` +
-        `--cache-to type=local --cache-to src=/tmp/.buildx-cache ` +
+        `--cache-from type=local,src=/tmp/.buildx-cache ` +
+        `--cache-to type=local,src=/tmp/.buildx-cache ` +
         `--secret ${await getSecret(`GIT_AUTH_TOKEN=${githubToken}`)} ${buildArgs} ` +
         `--file ${dockerFile} ` +
         `${context} `)
