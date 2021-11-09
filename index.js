@@ -8,6 +8,8 @@ const fs = require("fs").promises;
 const os = require("os");
 const tmp = require("tmp");
 
+const VERSION = 1;
+
 const image = core.getInput("image");
 const branch = (github.context.ref.match(/\/([^/]+)$/) || [,'unknown'])[1];
 const buildFor = core.getInput("build-for", { required: false }) || 'any';
@@ -72,6 +74,7 @@ async function filesChanged(paths) {
         }
     });
 
+    hash.update(VERSION);
     hash.update(`${image}-${buildFor}:${branch}`);
 
     for (const path of paths) {
