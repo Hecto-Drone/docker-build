@@ -41,9 +41,7 @@ async function buildAndPushDockerImage(imageName, dockerFile, push = true, conte
         `--tag ${imageName}${arch}:${branch} ` +
         `${push ? '--push' : ''} ` +
         `--secret ${await getSecret(`GIT_AUTH_TOKEN=${githubToken}`)} ${buildArgs} ` +
-        `--file ${dockerFile} ` +
-        `--cache-from type=local,src=/tmp/.buildx-cache ` +
-        `--cache-to type=local,src=/tmp/.buildx-cache `;
+        `--file ${dockerFile} `;
 
     if (archs.length == 0)
     {   
