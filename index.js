@@ -13,7 +13,6 @@ const VERSION = 1;
 const image = core.getInput("image");
 const platforms = core.getInput("platforms")
 const branch = (github.context.ref.match(/\/([^/]+)$/) || [,'unknown'])[1];
-const buildFor = core.getInput("build-for", { required: false }) || 'any';
 const githubToken = core.getInput("github-token");
 
 const mainBranches = [ "master", "development" ];
@@ -33,23 +32,39 @@ async function getSecret(kvp) {
 }
 
 async function buildAndPushDockerImage(imageName, dockerFile, push = true, context = ".") {
-    const arch = buildFor === "any" ? '' : '-' + buildFor;
-    const buildArgs = ["GIT_BRANCH=" + branch, "BUILD_FOR=" + buildFor].map(a => `--build-arg ${a}`).join(" ");
+    const buildArgs = [
+        "GIT_BRANCH=" + branch,
+    ].map(a => `--build-arg ${a}`).join(" ");
+    const archs = platforms.split(",");
 
     const args = `buildx build ` +
         `--tag ${imageName}${arch}:${branch} ` +
         `${push ? '--push' : ''} ` +
-        `${platforms ? '--platforms ' + platforms : ''} ` +
         `--secret ${await getSecret(`GIT_AUTH_TOKEN=${githubToken}`)} ${buildArgs} ` +
         `--file ${dockerFile} ` +
         `--cache-from type=local,src=/tmp/.buildx-cache ` +
-        `--cache-to type=local,src=/tmp/.buildx-cache ` +
-        `${context} `
-        .split(" ").filter(a => !!a);
-    const exitCode = await exec.exec("docker", args);
+        `--cache-to type=local,src=/tmp/.buildx-cache `;
 
-    if (exitCode !== 0) {
-        throw new Error("Docker build failed");
+    if (archs.length == 0)
+    {   
+        const exitCode = await exec.exec("docker", `buildx build ${args} ${context}`.trim().split(" ").filter(a => !!a));
+        
+        if (exitCode !== 0) {
+            throw new Error("Docker build failed");
+        }
+    } else {
+        for (var arch of archs)
+        {
+            core.startGroup("Build for platform: " + arch);
+            
+            const exitCode = await exec.exec("docker", `buildx build ${args} --platform=${arch} ${context}`.trim().split(" ").filter(a => !!a));
+        
+            if (exitCode !== 0) {
+                throw new Error("Docker build failed");
+            }
+
+            core.endGroup("Build for platform: " + arch);
+        }
     }
 }
 
