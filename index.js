@@ -37,7 +37,7 @@ async function buildAndPushDockerImage(imageName, dockerFile, push = true, conte
     ].map(a => `--build-arg ${a}`).join(" ");
     const archs = platforms.split(",");
 
-    const args = `buildx build ` +
+    const args =
         `--tag ${imageName}${arch}:${branch} ` +
         `${push ? '--push' : ''} ` +
         `--secret ${await getSecret(`GIT_AUTH_TOKEN=${githubToken}`)} ${buildArgs} ` +
@@ -56,7 +56,7 @@ async function buildAndPushDockerImage(imageName, dockerFile, push = true, conte
         for (var arch of archs)
         {
             core.startGroup("Build for platform: " + arch);
-            
+
             const exitCode = await exec.exec("docker", `buildx build ${args} --platform=${arch} ${context}`.trim().split(" ").filter(a => !!a));
         
             if (exitCode !== 0) {
