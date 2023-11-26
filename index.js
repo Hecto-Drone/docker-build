@@ -11,6 +11,7 @@ const tmp = require("tmp");
 const VERSION = 1;
 
 const image = core.getInput("image");
+const platforms = core.getInput("platforms")
 const branch = (github.context.ref.match(/\/([^/]+)$/) || [,'unknown'])[1];
 const buildFor = core.getInput("build-for", { required: false }) || 'any';
 const githubToken = core.getInput("github-token");
@@ -38,6 +39,7 @@ async function buildAndPushDockerImage(imageName, dockerFile, push = true, conte
     const args = `buildx build ` +
         `--tag ${imageName}${arch}:${branch} ` +
         `${push ? '--push' : ''} ` +
+        `${platforms ? '--platforms ' + platforms : ''} ` +
         `--secret ${await getSecret(`GIT_AUTH_TOKEN=${githubToken}`)} ${buildArgs} ` +
         `--file ${dockerFile} ` +
         `--cache-from type=local,src=/tmp/.buildx-cache ` +
