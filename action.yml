@@ -4,10 +4,10 @@ inputs:
   image:
     description: 'Docker image name'
     required: true
-  build-for:
-    description: 'Architecture image is bulid for'
+  platforms:
+    description: 'Architecture image is build for'
     required: false
-    default: 'any'
+    default: ''
   github-token:
     description: "GitHub Token used to authenticate against a repository for Git context"
     default: ${{ github.token }}
