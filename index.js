@@ -38,7 +38,7 @@ async function buildAndPushDockerImage(imageName, dockerFile, push = true, conte
     const archs = platforms.split(",");
 
     const args =
-        `--tag ${imageName}${arch}:${branch} ` +
+        `--tag ${imageName}:${branch} ` +
         `${push ? '--push' : ''} ` +
         `--secret ${await getSecret(`GIT_AUTH_TOKEN=${githubToken}`)} ${buildArgs} ` +
         `--file ${dockerFile} `;
@@ -90,7 +90,7 @@ async function filesChanged(paths) {
     });
 
     hash.update(VERSION);
-    hash.update(`${image}-${buildFor}:${branch}`);
+    hash.update(`${image}:${branch}`);
 
     for (const path of paths) {
         hash.update(await fs.readFile(path));
